@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ensaios Oficiais 2026</title>
+
+<style>
+body{
+  font-family: Arial, sans-serif;
+  background:#ffffff;
+  margin:0;
+  padding:20px;
+  font-size:16px;
+}
+
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-bottom:12px;
+}
+
+h1{
+  font-size:20px;
+  margin:0;
+}
+
+.clock{
+  font-weight:bold;
+  font-size:14px;
+  line-height:1.15;
+}
+
+.ajuste{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:13px;
+  padding:6px 10px;
+  border:1px solid #eee;
+  border-radius:10px;
+  background:#fafafa;
+}
+
+.ajuste input[type="time"]{
+  padding:4px 6px;
+}
+
+button{
+  padding:8px 14px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+  font-size:14px;
+}
+
+.print{ background:#111; color:#fff; }
+.reset{ background:#c62828; color:#fff; }
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:#fff;
+  box-shadow:0 5px 20px rgba(0,0,0,0.08);
+}
+
+th{
+  background:#111;
+  color:#fff;
+  padding:10px;
+}
+
+td{
+  padding:10px;
+  border-top:1px solid #eee;
+  vertical-align:top;
+}
+
+tr:nth-child(even){
+  background:#f9f9f9;
+}
+
+.confirmado{
+  background:#d4edda !important;
+}
+
+input[type="time"]{
+  padding:4px;
+}
+
+input[type="checkbox"]{
+  width:16px;
+  height:16px;
+}
+
+/* ✅ Campo dos nomes presentes */
+.presentes{
+  font-size:13px;
+  color:#111;
+  line-height:1.2;
+}
+.presentes b{ font-weight:700; }
+
+/* ✅ Resumo do topo */
+.resumo{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 12px;
+  margin-bottom:14px;
+  border:1px solid #eee;
+  border-radius:12px;
+  background:#fafafa;
+}
+.badge{
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid #e8e8e8;
+  background:#fff;
+  font-size:13px;
+}
+.badge strong{ font-weight:800; }
+
+@media print{
+  button, .clock, .ajuste{ display:none; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Ensaios • A partir de 19/02/2026 (inclui 21/02/2026 com Patrick)</h1>
+
+  <!-- ✅ AJUSTE DA BASE (13:00 em diante) -->
+  <div class="ajuste">
+    Base (13:00 em diante):
+    <input type="time" id="horaBase" value="13:00">
+  </div>
+
+  <div class="clock" id="clock"></div>
+
+  <div>
+    <button class="print" onclick="window.print()">Gerar PDF</button>
+    <button class="reset" onclick="resetar()">Zerar</button>
+  </div>
+</header>
+
+<!-- ✅ Resumo de presença -->
+<div class="resumo">
+  <div class="badge">Abizael: <strong id="countAbizael">0</strong> presenças</div>
+  <div class="badge">Renan: <strong id="countRenan">0</strong> presenças</div>
+  <div class="badge">Patrick (só dia 21): <strong id="countPatrick">0</strong> presença</div>
+  <div class="badge">Confirmados no período: <strong id="countConfirmados">0</strong></div>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>Data</th>
+<th>Horário</th>
+<th>Duração</th>
+<th>Abizael</th>
+<th>Renan</th>
+<th>Patrick (21/02)</th>
+<th>Presentes</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody id="tabela"></tbody>
+</table>
+
+<script>
+const STORAGE = "ensaios_19_02_2026_com_21_02_patrick_base13";
+
+const dataInicial = new Date(2026,1,19); // 19 fevereiro 2026
+const dataFinal   = new Date(2026,2,26); // 26 março 2026
+
+let dados = JSON.parse(localStorage.getItem(STORAGE)) || {};
+
+function salvar(){
+  localStorage.setItem(STORAGE, JSON.stringify(dados));
+}
+
+function calcularDuracao(inicio,fim){
+  const [h1,m1] = inicio.split(":").map(Number);
+  const [h2,m2] = fim.split(":").map(Number);
+  return (h2*60+m2)-(h1*60+m1);
+}
+
+function nomesPresentes(iso){
+  const lista = [];
+  if(dados[iso].Abizael) lista.push("Abizael");
+  if(dados[iso].Renan)   lista.push("Renan");
+  if(iso === "2026-02-21" && dados[iso].Patrick) lista.push("Patrick");
+  return lista;
+}
+
+function atualizarResumo(){
+  let ab = 0, re = 0, pa = 0, conf = 0;
+
+  Object.keys(dados).forEach(iso=>{
+    if(dados[iso].Abizael) ab++;
+    if(dados[iso].Renan)   re++;
+    if(iso === "2026-02-21" && dados[iso].Patrick) pa++;
+    if(dados[iso].status === "Confirmado") conf++;
+  });
+
+  document.getElementById("countAbizael").innerText = ab;
+  document.getElementById("countRenan").innerText = re;
+  document.getElementById("countPatrick").innerText = pa;
+  document.getElementById("countConfirmados").innerText = conf;
+}
+
+function gerarTabela(){
+  const tbody = document.getElementById("tabela");
+  tbody.innerHTML="";
+
+  let d = new Date(dataInicial);
+
+  while(d <= dataFinal){
+    const iso = d.toISOString().split("T")[0];
+    const dataEspecial = (iso === "2026-02-21");
+
+    if(d.getDay() === 4 || dataEspecial){
+
+      if(!dados[iso]){
+        dados[iso]={
+          inicio:"20:00",
+          fim:"22:00",
+          Abizael:false,
+          Renan:false,
+          Patrick:false,
+          status:"Pendente"
+        };
+      }
+
+      if(iso !== "2026-02-21") dados[iso].Patrick = false;
+
+      const dur = calcularDuracao(dados[iso].inicio,dados[iso].fim);
+      const presentes = nomesPresentes(iso);
+      const textoPresentes = presentes.length ? presentes.join(", ") : "—";
+
+      const tr = document.createElement("tr");
+      if(dados[iso].status==="Confirmado"){
+        tr.classList.add("confirmado");
+      }
+
+      const celulaPatrick = (iso === "2026-02-21")
+        ? `<input type="checkbox" ${dados[iso].Patrick?"checked":""}
+            onchange="toggle('${iso}','Patrick')">`
+        : `—`;
+
+      tr.innerHTML=`
+        <td><strong>${d.toLocaleDateString("pt-BR")}</strong></td>
+
+        <td>
+          <input type="time" value="${dados[iso].inicio}"
+          onchange="mudarInicio('${iso}',this.value)">
+          até
+          <input type="time" value="${dados[iso].fim}"
+          onchange="mudarFim('${iso}',this.value)">
+        </td>
+
+        <td><strong>${dur} minutos</strong></td>
+
+        <td>
+          <input type="checkbox"
+          ${dados[iso].Abizael?"checked":""}
+          onchange="toggle('${iso}','Abizael')">
+        </td>
+
+        <td>
+          <input type="checkbox"
+          ${dados[iso].Renan?"checked":""}
+          onchange="toggle('${iso}','Renan')">
+        </td>
+
+        <td>${celulaPatrick}</td>
+
+        <td class="presentes">
+          <b>Presentes:</b> ${textoPresentes}
+        </td>
+
+        <td>
+          <select onchange="mudarStatus('${iso}',this.value)">
+            <option ${dados[iso].status=="Pendente"?"selected":""}>Pendente</option>
+            <option ${dados[iso].status=="Confirmado"?"selected":""}>Confirmado</option>
+            <option ${dados[iso].status=="Cancelado"?"selected":""}>Cancelado</option>
+          </select>
+        </td>
+      `;
+
+      tbody.appendChild(tr);
+    }
+
+    d.setDate(d.getDate()+1);
+  }
+
+  salvar();
+  atualizarResumo();
+}
+
+function mudarInicio(data,valor){
+  dados[data].inicio=valor;
+  validar(data);
+}
+
+function mudarFim(data,valor){
+  dados[data].fim=valor;
+  validar(data);
+}
+
+function validar(data){
+  const dur = calcularDuracao(dados[data].inicio,dados[data].fim);
+
+  if(dur < 60) alert("Mínimo permitido: 1 hora.");
+  if(dur > 120){
+    alert("Máximo permitido: 2 horas.");
+    dados[data].fim="22:00";
+  }
+
+  gerarTabela();
+}
+
+function toggle(data,nome){
+  if(nome === "Patrick" && data !== "2026-02-21"){
+    alert("Patrick só está disponível no dia 21/02/2026.");
+    return;
+  }
+
+  dados[data][nome]=!dados[data][nome];
+
+  const temAlguem =
+    dados[data].Abizael ||
+    dados[data].Renan ||
+    (data === "2026-02-21" && dados[data].Patrick);
+
+  if(dados[data].status === "Confirmado" && !temAlguem){
+    dados[data].status = "Pendente";
+  }
+
+  salvar();
+  gerarTabela();
+}
+
+function mudarStatus(data,valor){
+  const temAlguem =
+    dados[data].Abizael ||
+    dados[data].Renan ||
+    (data === "2026-02-21" && dados[data].Patrick);
+
+  if(valor==="Confirmado" && !temAlguem){
+    alert("Selecione pelo menos um dançarino.");
+    gerarTabela();
+    return;
+  }
+
+  dados[data].status=valor;
+  gerarTabela();
+}
+
+/* ✅ RELÓGIO COM BASE AJUSTÁVEL (13:00 em diante) */
+function relogio(){
+  setInterval(()=>{
+    const agora = new Date();
+
+    const hh = agora.getHours().toString().padStart(2,"0");
+    const mm = agora.getMinutes().toString().padStart(2,"0");
+    const ss = agora.getSeconds().toString().padStart(2,"0");
+    const horaAtual = `${hh}:${mm}:${ss}`;
+
+    const base = (document.getElementById("horaBase").value || "13:00");
+    const [baseH, baseM] = base.split(":").map(Number);
+
+    // minutos do dia
+    const agoraMin = (agora.getHours()*60) + agora.getMinutes();
+    const baseMin  = (baseH*60) + baseM;
+
+    let proximaHoraCheiaMin;
+
+    if(agoraMin < baseMin){
+      // ainda não chegou na base -> contagem começa na base
+      proximaHoraCheiaMin = baseMin;
+    } else {
+      // próxima hora cheia normal
+      proximaHoraCheiaMin = (Math.floor(agoraMin/60)+1)*60;
+      if(proximaHoraCheiaMin >= 1440) proximaHoraCheiaMin = 0; // vira o dia
+    }
+
+    const proxH = Math.floor(proximaHoraCheiaMin/60).toString().padStart(2,"0");
+    const proxM = (proximaHoraCheiaMin%60).toString().padStart(2,"0");
+    const proxima = `${proxH}:${proxM}`;
+
+    const statusBase = (agoraMin < baseMin)
+      ? `Aguardando iniciar na base: <b>${base}</b>`
+      : `Base ativa: <b>${base}</b> (em diante)`;
+
+    document.getElementById("clock").innerHTML = `
+      <div>⏰ ${horaAtual}</div>
+      <div style="font-size:13px; color:#444;">${statusBase}</div>
+      <div style="font-size:13px; font-weight:bold;">Próxima hora cheia: ${proxima}</div>
+    `;
+  },1000);
+}
+
+function resetar(){
+  if(confirm("Apagar tudo?")){
+    localStorage.removeItem(STORAGE);
+    dados={};
+    gerarTabela();
+  }
+}
+
+gerarTabela();
+relogio();
+</script>
+
+</body>
+</html>
