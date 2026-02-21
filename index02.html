@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cronômetro de Ensaio • EdyMichaelCover</title>
+
+<style>
+body{
+    background:#000;
+    font-family: Arial, Helvetica, sans-serif;
+    margin:40px;
+    color:white;
+    text-align:center;
+}
+
+h1{
+    color:gold;
+}
+
+.clock{
+    font-size:22px;
+    font-weight:bold;
+    margin-bottom:20px;
+    color:#00ffff;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+
+th, td{
+    border:2px solid #00ffff;
+    padding:10px;
+    text-align:center;
+}
+
+th{
+    background:#111;
+    color:gold;
+}
+
+button{
+    padding:6px 10px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.start{ background:#00c853; color:white; }
+.stop{ background:#d50000; color:white; }
+.reset{ background:gold; color:black; }
+
+.status{
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Controle de Ensaio • EdyMichaelCover</h1>
+
+<div class="clock" id="clock"></div>
+
+<table>
+<tr>
+<th>Nome</th>
+<th>Função</th>
+<th>Chegada</th>
+<th>Cronômetro</th>
+<th>Status</th>
+<th>Ação</th>
+</tr>
+
+<tr>
+<td>Abizael</td>
+<td>Dançarino</td>
+<td id="chegada1">--</td>
+<td id="tempo1">00:00:00</td>
+<td id="status1" class="status">Aguardando</td>
+<td>
+<button class="start" onclick="iniciar(1)">Marcar Chegada</button>
+<button class="stop" onclick="encerrar(1)">Encerrar</button>
+</td>
+</tr>
+
+<tr>
+<td>Patrick</td>
+<td>Dançarino</td>
+<td id="chegada2">--</td>
+<td id="tempo2">00:00:00</td>
+<td id="status2" class="status">Aguardando</td>
+<td>
+<button class="start" onclick="iniciar(2)">Marcar Chegada</button>
+<button class="stop" onclick="encerrar(2)">Encerrar</button>
+</td>
+</tr>
+
+</table>
+
+<br>
+<button class="reset" onclick="resetar()">Reset Geral</button>
+
+<script>
+
+// Relógio Digital
+function atualizarRelogio(){
+    const agora = new Date();
+    document.getElementById("clock").innerHTML =
+        agora.toLocaleDateString("pt-BR") + " • " +
+        agora.toLocaleTimeString("pt-BR");
+}
+setInterval(atualizarRelogio,1000);
+atualizarRelogio();
+
+let cronometros = {};
+let intervalos = {};
+
+function iniciar(id){
+    if(cronometros[id]) return;
+
+    let agora = new Date();
+    document.getElementById("chegada"+id).innerHTML =
+        agora.toLocaleTimeString("pt-BR");
+
+    cronometros[id] = Date.now();
+
+    document.getElementById("status"+id).innerHTML = "Em Ensaio";
+    document.getElementById("status"+id).style.color = "#00ff00";
+
+    intervalos[id] = setInterval(()=>{
+        let tempo = Date.now() - cronometros[id];
+
+        let horas = Math.floor(tempo / 3600000);
+        let minutos = Math.floor((tempo % 3600000) / 60000);
+        let segundos = Math.floor((tempo % 60000) / 1000);
+
+        document.getElementById("tempo"+id).innerHTML =
+            String(horas).padStart(2,'0') + ":" +
+            String(minutos).padStart(2,'0') + ":" +
+            String(segundos).padStart(2,'0');
+
+        // 🔒 BLOQUEIO 2 HORAS
+        if(horas >= 2){
+            encerrar(id);
+        }
+
+    },1000);
+}
+
+function encerrar(id){
+    if(!cronometros[id]) return;
+
+    let tempoTotal = Date.now() - cronometros[id];
+
+    let horas = Math.floor(tempoTotal / 3600000);
+    let minutos = Math.floor((tempoTotal % 3600000) / 60000);
+
+    if(tempoTotal < 5400000){
+        alert("⚠ Ensaio mínimo é 1h30!");
+        return;
+    }
+
+    clearInterval(intervalos[id]);
+    delete cronometros[id];
+
+    document.getElementById("status"+id).innerHTML =
+        "Finalizado ("+horas+"h "+minutos+"m)";
+    document.getElementById("status"+id).style.color = "gold";
+}
+
+function resetar(){
+    location.reload();
+}
+
+</script>
+
+</body>
+</html>
