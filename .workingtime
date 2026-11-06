@@ -324,6 +324,40 @@
                             "actionType": "Idle"
                         }
                     ]
+                },
+                {
+                    "date": "Fri Nov 06 2026",
+                    "sessions": [
+                        {
+                            "sessionInfo": {
+                                "id": "50f6a6ed-6a94-414d-9f0c-486bc5bb10f3",
+                                "duration": 49941,
+                                "idle": 1774430,
+                                "state": "Idle",
+                                "durations": [
+                                    {
+                                        "id": "bb04d9e7-7b35-4d52-bae3-166650545309",
+                                        "state": "Idle",
+                                        "begin": 1793944335675,
+                                        "end": 1793944335675,
+                                        "duration": 0
+                                    },
+                                    {
+                                        "id": "e064fa6a-58fc-4b31-b5df-fc54ddac3d14",
+                                        "state": "Ongoing",
+                                        "begin": 1793944285734,
+                                        "end": 1793944335675,
+                                        "duration": 49941
+                                    }
+                                ],
+                                "filesExt": [
+                                    "",
+                                    ".html"
+                                ]
+                            },
+                            "actionType": "Idle"
+                        }
+                    ]
                 }
             ]
         }
