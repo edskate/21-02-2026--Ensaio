@@ -290,6 +290,40 @@
                             "actionType": "Idle"
                         }
                     ]
+                },
+                {
+                    "date": "Fri Oct 30 2026",
+                    "sessions": [
+                        {
+                            "sessionInfo": {
+                                "id": "14d5d181-35ec-43cb-8115-52795520d652",
+                                "duration": 9606,
+                                "idle": 7078049,
+                                "state": "Idle",
+                                "durations": [
+                                    {
+                                        "id": "314211bd-9ff8-4913-b97a-dda4ff2ad7a8",
+                                        "state": "Idle",
+                                        "begin": 1793332653570,
+                                        "end": 1793332653570,
+                                        "duration": 0
+                                    },
+                                    {
+                                        "id": "85ff7031-30bb-41aa-af13-06994a72945b",
+                                        "state": "Ongoing",
+                                        "begin": 1793332643964,
+                                        "end": 1793332653570,
+                                        "duration": 9606
+                                    }
+                                ],
+                                "filesExt": [
+                                    "",
+                                    ".html"
+                                ]
+                            },
+                            "actionType": "Idle"
+                        }
+                    ]
                 }
             ]
         }
